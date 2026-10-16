@@ -1,0 +1,2718 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Веб-студія CRM API",
+        "description": "Документація модульного Headless бекенду CRM-системи",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8090/api/v1",
+            "description": "Локальний сервер розробки (Docker)"
+        }
+    ],
+    "paths": {
+        "/client-env/brief-templates": {
+            "get": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Отримання списку всіх доступних шаблонів брифів у системі (Admin / PM)",
+                "operationId": "8e42e67fb23dd2b51fc2a94aff90633a",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку брифів",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/brief-templates/store": {
+            "post": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Створення нового шаблону брифу з нуля (Admin / PM)",
+                "operationId": "f5aba46dd167d0c0fcbdc99cba9e8606",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "service_type",
+                                    "schema_payload"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Бриф: Новий кастомний шаблон"
+                                    },
+                                    "service_type": {
+                                        "type": "string",
+                                        "example": "web_development"
+                                    },
+                                    "schema_payload": {
+                                        "description": "Початкове JSON-дерево кроків та полів конструктора",
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Шаблон успішно створено з нуля"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/brief-templates/{id}/update": {
+            "put": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Повне редагування всіх полів та всієї JSONB-структури брифу (Admin / PM)",
+                "operationId": "90450ed77b60a9610f901c46fa377799",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID шаблону брифу",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "service_type",
+                                    "schema_payload"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Бриф: Корпоративний сайт (Оновлений)"
+                                    },
+                                    "service_type": {
+                                        "type": "string",
+                                        "example": "web_development"
+                                    },
+                                    "schema_payload": {
+                                        "description": "Повне оновлене JSON-дерево кроків, полів та правил валідації конструктора",
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Шаблон брифу та його схема успішно оновлені"
+                    },
+                    "404": {
+                        "description": "Шаблон не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/brief-templates/{id}/fields": {
+            "patch": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Точкове додавання або видалення конкретного поля з існуючого шаблону (Admin / PM)",
+                "operationId": "d61659852378080dec72e73e9f2e2b1f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "step_key",
+                                    "action",
+                                    "field_data"
+                                ],
+                                "properties": {
+                                    "step_key": {
+                                        "description": "Ключ кроку, наприклад step_1_company",
+                                        "type": "string",
+                                        "example": "step_1_company"
+                                    },
+                                    "action": {
+                                        "description": "Дія: add або remove",
+                                        "type": "string",
+                                        "example": "add"
+                                    },
+                                    "field_data": {
+                                        "description": "Специфікація обʼєкта поля (для add) або обʼєкт із field_id (для remove)",
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Шаблон брифу точково оновлено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/brief-templates/{id}": {
+            "delete": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Видалення шаблону брифу з СУБД-захистом (Тільки для ролі Admin)",
+                "operationId": "7e7e6d4b613af05fcaabea73f9ba1dd8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Шаблон брифу успішно видалено з системи"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено (Тільки для Admin)"
+                    },
+                    "422": {
+                        "description": "Помилка СУБД: до шаблону привʼязані активні проєкти"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/projects": {
+            "get": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Отримання повного дерева глобальних контрактів та їх етапів (Admin / PM)",
+                "operationId": "d0cea3fc3645efdcdb5e64d846182b14",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання дерева проєктів",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/projects/store": {
+            "post": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Створення картки глобального контракту або дочірнього виробничого етапу (Admin / PM)",
+                "operationId": "315172a17ab5bea7da86d37e4852ef99",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "client_id",
+                                    "budget"
+                                ],
+                                "properties": {
+                                    "parent_id": {
+                                        "description": "ID батьківського проєкту (якщо це дочірній етап)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "client_id": {
+                                        "description": "ID користувача-замовника",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "brief_template_id": {
+                                        "description": "ID брифу (обовʼязково для етапів)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Етап 1: Розробка UI/UX Дизайну магазину"
+                                    },
+                                    "budget": {
+                                        "description": "Бюджет у копійках",
+                                        "type": "integer",
+                                        "example": 15000000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Проєкт/Етап успішно створено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації вхідних даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/projects/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Зміна виробничого статусу конкретного етапу або контракту (Admin / PM)",
+                "operationId": "3defaeef75235a807f5b350f4a48139a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Новий статус",
+                                        "type": "string",
+                                        "example": "in_development"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Статус успішно оновлено"
+                    },
+                    "404": {
+                        "description": "Проєкт не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/projects/{id}/update": {
+            "put": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Повне редагування всіх полів, звʼязків та JSONB-відповідей брифу проєкту (Admin / PM)",
+                "operationId": "0649da71e99cde67393aa20741f587eb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "client_id",
+                                    "budget",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "client_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "brief_template_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Оновлена назва проєкту або етапу"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "in_development"
+                                    },
+                                    "budget": {
+                                        "type": "integer",
+                                        "example": 60000000
+                                    },
+                                    "brief_data": {
+                                        "description": "Оновлені чисті відповіді брифу клієнда у форматі JSON (пари ключ:значення)",
+                                        "type": "object",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Проєкт та його бриф-дані успішно оновлено"
+                    },
+                    "404": {
+                        "description": "Проєкт не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації вхідних даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client-env/projects/{id}": {
+            "delete": {
+                "tags": [
+                    "Панель Менеджера / Клієнтський Контур"
+                ],
+                "summary": "Безповоротне видалення картки проєкту (Тільки для ролі Admin)",
+                "operationId": "cca79b9663c763622c95ebd8c2bef8d6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Проєкт успішно видалено з системи"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено (PM не може видаляти проєкти)"
+                    },
+                    "404": {
+                        "description": "Проєкт не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tickets/moderation": {
+            "get": {
+                "tags": [
+                    "Панель Ментора / Модерація Тікетів"
+                ],
+                "summary": "Список усіх тікетів від лінійних спеціалістів, що очікують модерації (Admin / PM)",
+                "operationId": "65748ce74cf5423f16bfecf268356136",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Фільтрація за категорією (tech_issue, documents, edits)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання пулу тікетів на перевірку",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tickets/{id}/approve": {
+            "patch": {
+                "tags": [
+                    "Панель Ментора / Модерація Тікетів"
+                ],
+                "summary": "Схвалення тікета, заповнення тексту для клієнта та відправка в його кабінет (Admin / PM)",
+                "operationId": "753eb1a1aba0238899ba3c75c7edfbd6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "message_to_client"
+                                ],
+                                "properties": {
+                                    "message_to_client": {
+                                        "type": "string",
+                                        "example": "Шановний клієнте, ми оновили адаптивну верстку головної сторінки. Будь ласка, перевірте."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Тікет успішно відмодеровано та відправлено клієнту"
+                    },
+                    "404": {
+                        "description": "Тікет не знайдено або вже оброблено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tickets/{id}/reply": {
+            "post": {
+                "tags": [
+                    "Панель Ментора / Модерація Тікетів"
+                ],
+                "summary": "Відповідь менеджера (PM) всередину існуючого тікета клієнта (Admin / PM)",
+                "operationId": "37fba67326b85cc4ba14b4a60c65c856",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "message_to_client"
+                                ],
+                                "properties": {
+                                    "message_to_client": {
+                                        "type": "string",
+                                        "example": "Ми прийняли ваші правки, розробники вже взяли задачу в роботу. Очікуйте апдейт."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Відповідь успішно додана в тікет"
+                    },
+                    "404": {
+                        "description": "Тікет не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tickets/store-for-client": {
+            "post": {
+                "tags": [
+                    "Панель Ментора / Модерація Тікетів"
+                ],
+                "summary": "Створення нового ініціативного тікета менеджером (PM) для конкретного проєкту клієнта (Admin / PM)",
+                "operationId": "c69c8c92bb4726756d1175fecfd7b436",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id",
+                                    "title",
+                                    "category",
+                                    "message_to_client"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Запит доступу до платіжного шлюзу LiqPay"
+                                    },
+                                    "category": {
+                                        "description": "tech_issue, documents, edits",
+                                        "type": "string",
+                                        "example": "documents"
+                                    },
+                                    "message_to_client": {
+                                        "type": "string",
+                                        "example": "Для налаштування онлайн-оплати надішліть, будь ласка, Public та Private ключі мерчанта."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Тікет для клієнта успішно створено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації полів"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects": {
+            "get": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Мультипроєктний дашборд клієнта: дерево його контрактів та етапів",
+                "operationId": "7b5bc42c093badd089c7d4b2878f810e",
+                "parameters": [
+                    {
+                        "name": "client_id",
+                        "in": "query",
+                        "description": "ID клієнта (тільки для Admin/PM для аудиту)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання проєктів клієнта",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects/{id}/brief/template": {
+            "get": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Запит актуальної JSON-схеми брифу для конкретного виробничого етапу",
+                "operationId": "59aa0a537a4b8550e1bdf6d570de05a9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID дочірнього проєкту (етапу)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання схеми полів брифу"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено (Project Boundary)"
+                    },
+                    "422": {
+                        "description": "До цього етапу не привʼязано шаблон брифу"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects/{id}/brief/step": {
+            "post": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Порційне збереження відповідей брифу клієнтом з динамічною валідацією",
+                "operationId": "5ae31f9d56521cc26b943a8fba17364a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID проєкту/етапу",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "step_key",
+                                    "answers"
+                                ],
+                                "properties": {
+                                    "step_key": {
+                                        "type": "string",
+                                        "example": "step_1_company"
+                                    },
+                                    "answers": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Крок брифу успішно збережено"
+                    },
+                    "422": {
+                        "description": "Помилка динамічної валідації полів"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects/{id}/contract/sign": {
+            "post": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Цифрове підписання договору клієнтом з фіксацією криптографічного SHA-256 сліду",
+                "operationId": "4606eb88cf8d887697f47a50d0ed5b11",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID проєкту/етапу",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Договір успішно підписано"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects/{id}/tickets": {
+            "get": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Перегляд гілки повідомлень тікетів по проєкту (Клієнт бачит тільки текст PM-а)",
+                "operationId": "1846949c47db9e79b5370f1e84781053",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID проєкту",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання тікетів"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/client/projects/{id}/tickets/store": {
+            "post": {
+                "tags": [
+                    "Кабінет Клієнта / Інтерфейс"
+                ],
+                "summary": "Створення нового організаційного або технічного тікета клієнтом",
+                "operationId": "e197c0606ed73310238729ac3f417066",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID проєкту",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "category",
+                                    "message_to_client"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Проблема з відображенням оплати"
+                                    },
+                                    "category": {
+                                        "description": "tech_issue, documents, edits",
+                                        "type": "string",
+                                        "example": "tech_issue"
+                                    },
+                                    "message_to_client": {
+                                        "type": "string",
+                                        "example": "Опис проблеми від клієнта..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Тікет успішно відкрито"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Автентифікація"
+                ],
+                "summary": "Авторизація користувача (Вхід)",
+                "operationId": "4c012ae214771b2556521e310db345ef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@crm.local"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "admin123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успішна авторизація",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|laravel_sanctum_token..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Автентифікація"
+                ],
+                "summary": "Завершення сесії (Вихід)",
+                "operationId": "096671fd945c95924228272736f66a12",
+                "responses": {
+                    "200": {
+                        "description": "Токен успішно анульовано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизований запит"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Автентифікація"
+                ],
+                "summary": "Отримання профілю поточного користувача",
+                "description": "Отримання профілю поточного авторизованого користувача",
+                "operationId": "873548f3bf28e4982df2aeea25bc6b89",
+                "responses": {
+                    "200": {
+                        "description": "Дані профілю успішно отримано разом із ролями",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Олександр Адмін"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "admin@crm.local"
+                                                },
+                                                "roles": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "admin"
+                                                    }
+                                                },
+                                                "profile_data": {
+                                                    "properties": {
+                                                        "phone": {
+                                                            "type": "string",
+                                                            "example": "+380671112233"
+                                                        },
+                                                        "position": {
+                                                            "type": "string",
+                                                            "example": "CEO / Founder"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизований запит (відсутній або невалідний токен)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/iam/users": {
+            "get": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Список усіх користувачів системи (Тільки для Admin)",
+                "operationId": "e5ab76e8e007f1500230229decbec27a",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Фільтр за назвою ролі (admin, pm, specialist, candidate, client)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список користувачів успішно отримано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/iam/roles": {
+            "get": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Список усіх ролей системи (Тільки для Admin)",
+                "operationId": "0f2126df82f85d9bb2b9678fd9bc22ec",
+                "responses": {
+                    "200": {
+                        "description": "Список ролей успішно отримано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/iam/users/{id}": {
+            "get": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Деталі користувача за ID (Тільки для Admin)",
+                "operationId": "6b63d682c4943b33407da7526e08e29c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Дані користувача успішно отримано"
+                    },
+                    "404": {
+                        "description": "Користувача не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Видалення користувача із системи (Тільки для Admin)",
+                "operationId": "f4fea552c1cc96f06e3f8c0f1c3e1571",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID користувача, якого потрібно видалити",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Користувача успішно видалено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Користувача успішно видалено із системи."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Користувача не знайдено в базі даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/iam/users/store": {
+            "post": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Ручне створення користувача (Тільки для Admin)",
+                "operationId": "270a944121a94fda12068025e2b4a885",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Тест Розробник"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "dev_modified@crm.local"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "specialist"
+                                    },
+                                    "password": {
+                                        "description": "Передавати тільки якщо потрібно змінити пароль",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new_password123"
+                                    },
+                                    "profile_data": {
+                                        "description": "Мета-дані профілю (JSONB)",
+                                        "properties": {
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+380679998877"
+                                            },
+                                            "specialization": {
+                                                "type": "string",
+                                                "example": "backend"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Користувача успішно створено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/iam/users/{id}/update": {
+            "put": {
+                "tags": [
+                    "Управління користувачами"
+                ],
+                "summary": "Редагування користувача (Тільки для Admin)",
+                "operationId": "f823a4b6b85aa046934305706437039c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID користувача для оновлення",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 4
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Дані для оновлення профілю користувача",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Тест Розробник"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "dev_modified@crm.local"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "specialist"
+                                    },
+                                    "password": {
+                                        "description": "Передавати тільки якщо потрібно змінити пароль",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "new_password123"
+                                    },
+                                    "profile_data": {
+                                        "description": "Мета-дані профілю (JSONB)",
+                                        "properties": {
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+380679998877"
+                                            },
+                                            "specialization": {
+                                                "type": "string",
+                                                "example": "backend"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Дані користувача успішно оновлено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Дані користувача успешно оновлено."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    },
+                    "404": {
+                        "description": "Користувача не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/tasks/list": {
+            "get": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Перегляд усіх глобальних завдань у системі з гнучкою фільтрацією (Admin)",
+                "operationId": "46712eb17cc006c4e11569af513647ad",
+                "parameters": [
+                    {
+                        "name": "pm_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "project_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "is_overdue",
+                        "in": "query",
+                        "description": "Фільтр протермінованих (1 або 0)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку завдань"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/tasks": {
+            "post": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Створення нового макро-завдання для PM з автооновленням статусу проєкту (Admin)",
+                "operationId": "6f76590ec0e4c00fbf4b98d21b463407",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id",
+                                    "pm_id",
+                                    "title",
+                                    "description",
+                                    "deadline_at"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "pm_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Провести брифінг клієнта"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Узгодити бриф на розробку інтернет-магазину"
+                                    },
+                                    "deadline_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-20 18:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Завдання створено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/tasks/{id}/update": {
+            "put": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Повне редагування завдання або його перепризначення на іншого PM (Admin)",
+                "operationId": "7204b2d16dd5d8612d587efd57251d5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id",
+                                    "pm_id",
+                                    "title",
+                                    "description",
+                                    "status",
+                                    "deadline_at"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "pm_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Оновлена назва завдання"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Оновлений опис кроку"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "in_progress"
+                                    },
+                                    "result_url": {
+                                        "type": "string",
+                                        "example": "http://...",
+                                        "nullable": true
+                                    },
+                                    "deadline_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-25 12:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Завдання оновлено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/tasks/{id}/approve": {
+            "patch": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Підтвердження виконання макро-завдання Керівництвом (Admin)",
+                "operationId": "78297825c7b5c3d640a690ad4a6374ca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Завдання офіційно закрите та виконане"
+                    },
+                    "404": {
+                        "description": "Завдання не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/tasks/{id}": {
+            "delete": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Видалення завдання з перевіркою статусу виконання (Admin)",
+                "operationId": "6ccee9a04d120820caf3559feadb3163",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Завдання видалено"
+                    },
+                    "422": {
+                        "description": "Помилка бізнес-логіки: завдання вже на перевірці або виконано"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/management/dashboard/metrics": {
+            "get": {
+                "tags": [
+                    "Панель Керівництва / Контроль Виробництва"
+                ],
+                "summary": "Зведена бізнес-аналітика та метрики ефективності для Керівництва (Admin)",
+                "operationId": "92ce99dddaa1bd6ab59650feb9d03268",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання метрик ефективності студії"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tasks": {
+            "get": {
+                "tags": [
+                    "Кабінет Менеджера / Завдання"
+                ],
+                "summary": "Список глобальних макро-завдань, призначених строго на поточного авторизованого PM (PM)",
+                "operationId": "6531298dee31e4e94d4ba23c6bfcdab8",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку особистих завдань",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/pm/tasks/{id}/status": {
+            "patch": {
+                "tags": [
+                    "Кабінет Менеджера / Завдання"
+                ],
+                "summary": "Зміна виробничого статусу завдання менеджером (PM)",
+                "operationId": "3122f8cdefe1a2c49c01e9e846545ff1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Новий статус: in_progress або review",
+                                        "type": "string",
+                                        "example": "review"
+                                    },
+                                    "result_url": {
+                                        "description": "Опціональне посилання на договір/Figma/акт",
+                                        "type": "string",
+                                        "example": "https://figma.com...",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Статус завдання успішно змінено"
+                    },
+                    "403": {
+                        "description": "Доступ заборонено (спроба змінити чуже завдання)"
+                    },
+                    "422": {
+                        "description": "Помилка валідації вхідних даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses": {
+            "get": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Список усіх курсів у системі (Admin / PM)",
+                "operationId": "804090e4f98a4618dc7e9e5ffc03744c",
+                "parameters": [
+                    {
+                        "name": "specialization",
+                        "in": "query",
+                        "description": "Фільтрація за напрямком (backend, frontend, design, seo)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку курсів",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/store": {
+            "post": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Створення нового курсу з авторозрахунком сортування (Admin / PM)",
+                "operationId": "e8703f0930c62d13708c8d92868530d9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "specialization"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Основи Frontend-розробки"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Курс по Vue.js та Vite"
+                                    },
+                                    "specialization": {
+                                        "type": "string",
+                                        "example": "frontend"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Курс успішно створено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/{id}/update": {
+            "put": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Редагування текстових полів курсу (Admin / PM)",
+                "operationId": "1ba59cb33504a09bdeae019b83a12216",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Основи Frontend-розробки (Оновлено)"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Нова програма навчання по Vue 3"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Курс успішно оновлено"
+                    },
+                    "404": {
+                        "description": "Курс не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/{id}/toggle-status": {
+            "patch": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Швидке перемикання активності курсу (Admin / PM)",
+                "operationId": "ed0201d64dfe029b79905961716cb8b5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус курсу успішно змінено"
+                    },
+                    "404": {
+                        "description": "Курс не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/reorder": {
+            "post": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Drag-and-Drop пересортування курсів (Admin / PM)",
+                "operationId": "962abfef69d704652471f81773e1a285",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "specialization",
+                                    "course_id",
+                                    "new_position"
+                                ],
+                                "properties": {
+                                    "specialization": {
+                                        "type": "string",
+                                        "example": "backend"
+                                    },
+                                    "course_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "new_position": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Порядок курсів успішно змінено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/{id}": {
+            "delete": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Видалення курсу з автоматичним каскадним зсувом номерів (Admin / PM)",
+                "operationId": "6e814d5c38f716a68faf2565983a5fd1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Курс успішно видалено"
+                    },
+                    "404": {
+                        "description": "Курс не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/reviews": {
+            "get": {
+                "tags": [
+                    "Панель Ментора / Перевірка Робіт"
+                ],
+                "summary": "Список надісланих практичних завдань, що очікують оцінки PM-а (Admin / PM)",
+                "operationId": "ddc30f72aff99ebc5e6b7a08a4fe9ee5",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку робіт на перевірку",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/reviews/{id}/verify": {
+            "patch": {
+                "tags": [
+                    "Панель Ментора / Перевірка Робіт"
+                ],
+                "summary": "Вердикт PM-а щодо практичної роботи стажера (Admin / PM)",
+                "operationId": "54c24c53d70bdf3ae4c1e21cc1312a76",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID запису прогресу (candidate_progress.id)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Вердикт: passed або in_progress",
+                                        "type": "string",
+                                        "example": "passed"
+                                    },
+                                    "comment": {
+                                        "description": "Текстове зауваження або фідбек при відхиленні",
+                                        "type": "string",
+                                        "example": "Перероби сітку у Figma, попливли відступи."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Вердикт успішно зафіксовано"
+                    },
+                    "404": {
+                        "description": "Запис перевірки не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/{course_id}/steps": {
+            "get": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Список усіх завдань всередині конкретного курсу (Admin / PM)",
+                "operationId": "ce910ae81f48f286845d438181ecbe44",
+                "parameters": [
+                    {
+                        "name": "course_id",
+                        "in": "path",
+                        "description": "ID курсу, кроки якого потрібно отримати",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання списку завдань",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Курс не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/store": {
+            "post": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Додавання нового завдання в курс із авторозрахунком сортування (Admin / PM)",
+                "operationId": "309eb9c23bfceddc98393c9e8cc2a2b1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "course_id",
+                                    "title",
+                                    "content"
+                                ],
+                                "properties": {
+                                    "course_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Основи роботи з Git та GitFlow"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Текст лекції про правила розгалуження в студії..."
+                                    },
+                                    "test_schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        },
+                                        "example": [
+                                            {
+                                                "question_id": 1,
+                                                "question_text": "Яка гілка є основною для релізу?",
+                                                "options": [
+                                                    "main",
+                                                    "dev",
+                                                    "feature"
+                                                ],
+                                                "correct_option_index": 0,
+                                                "type": "single_choice"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Завдання успішно додано"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/{id}/update": {
+            "put": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Повне редагування завдання (Admin / PM)",
+                "operationId": "c27390bcc78e0433159ea379f8255bea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID завдання (кроку)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "content"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Основи роботи з Git (Оновлено)"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Оновлений текст лекції з детальними прикладами команд..."
+                                    },
+                                    "test_schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Завдання успішно оновлено"
+                    },
+                    "404": {
+                        "description": "Завдання не знайдено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/{id}/toggle-status": {
+            "patch": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Швидке перемикання активності конкретного завдання (Admin / PM)",
+                "operationId": "f956795c84435dbb077bc094e48282b6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID завдання",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус завдання успішно змінено"
+                    },
+                    "404": {
+                        "description": "Завдання не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/reorder": {
+            "post": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Drag-and-Drop пересортування завдань (Admin / PM)",
+                "operationId": "e803d9489f04086b9a3a98d6163915f8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "course_id",
+                                    "step_id",
+                                    "new_position"
+                                ],
+                                "properties": {
+                                    "course_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "step_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "new_position": {
+                                        "description": "Нова позиція (починаючи з 1)",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Порядок завдань успішно змінено"
+                    },
+                    "422": {
+                        "description": "Помилка валідації даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/{id}": {
+            "get": {
+                "tags": [
+                    "Кабінет Стажера / Проходження"
+                ],
+                "summary": "Відкриття тексту лекції та тестових питань із маскуванням відповідей",
+                "operationId": "7895e8df372532774be82907e2323b4b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне відкриття кроку"
+                    },
+                    "403": {
+                        "description": "Доступ заблоковано"
+                    },
+                    "404": {
+                        "description": "Завдання не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Модуль Onboarding / Навчання"
+                ],
+                "summary": "Видалення завдання з автоматичним перерахунком номерів сортування (Admin / PM)",
+                "operationId": "29b0bc5f2e286257c3479492e69a2a2f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID завдання",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Завдання успішно видалено"
+                    },
+                    "404": {
+                        "description": "Завдання не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/my-courses": {
+            "get": {
+                "tags": [
+                    "Кабінет Стажера / Проходження"
+                ],
+                "summary": "Список активних курсів стажера за його спеціалізацією з розрахунком прогресу (або всі курси для Admin/PM)",
+                "operationId": "8faaef16a5e98d5c365838dab9824029",
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання курсів із прогресом",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Помилка валідації профілю стажера"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/courses/{course_id}/my-tasks": {
+            "get": {
+                "tags": [
+                    "Кабінет Стажера / Проходження"
+                ],
+                "summary": "Лінійний список завдань курсу з динамічними статусами проходження",
+                "operationId": "1b191aba012ab0024bc1cd29169a162c",
+                "parameters": [
+                    {
+                        "name": "course_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успішне отримання завдань зі статусами"
+                    },
+                    "404": {
+                        "description": "Курс не знайдено"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/onboarding/steps/{id}/submit": {
+            "post": {
+                "tags": [
+                    "Кабінет Стажера / Проходження"
+                ],
+                "summary": "Відправка відповідей на тест або посилання на практичне завдання",
+                "operationId": "fada585513bd682debbc483395846fe8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "answers": {
+                                        "type": "object",
+                                        "example": {
+                                            "1": 1
+                                        }
+                                    },
+                                    "task_url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "example": "https://github.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Результат обробки завдання"
+                    },
+                    "422": {
+                        "description": "Помилка валідації вхідних даних"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Введіть отриманий access_token для доступу до захищених ендпоінтів",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Автентифікація",
+            "description": "Контур авторизації, реєстрації та керування токенами користувачів"
+        },
+        {
+            "name": "Управління користувачами",
+            "description": "Управління користувачами"
+        },
+        {
+            "name": "Модуль Onboarding / Навчання",
+            "description": "Адміністративний контур та кабінет стажера для управління базою знань і тестами"
+        },
+        {
+            "name": "Кабінет Стажера / Проходження",
+            "description": "Кабінет Стажера / Проходження"
+        },
+        {
+            "name": "Панель Ментора / Перевірка Робіт",
+            "description": "Панель Ментора / Перевірка Робіт"
+        },
+        {
+            "name": "Панель Керівництва / Контроль Виробництва",
+            "description": "Інструменти вищого керівництва (Admin) для постановки макро-завдань, аудиту дедлайнів та аналітики студії"
+        },
+        {
+            "name": "Панель Менеджера / Клієнтський Контур",
+            "description": "Адміністративні інструменти PM-а та Керівництва для управління деревом проєктів та конструктором брифів"
+        },
+        {
+            "name": "Кабінет Клієнта / Інтерфейс",
+            "description": "Ізольоване мультипроєктне середовище для замовників (бріфи, цифрові підписи, тікети)"
+        },
+        {
+            "name": "Панель Ментора / Модерація Тікетів",
+            "description": "Панель Ментора / Модерація Тікетів"
+        },
+        {
+            "name": "Кабінет Менеджера / Завдання",
+            "description": "Ізольоване робоче середовище для Project Manager-ів (PM) для отримання та зміни статусів завдань"
+        }
+    ]
+}

@@ -1,0 +1,59 @@
+services:
+  # 1. Контейнер приложения (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: webstudio-crm-app
+    container_name: crm_app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - crm_network
+    depends_on:
+      - db
+
+  # 2. Веб-сервер NGINX
+  webserver:
+    image: nginx:alpine
+    container_name: crm_webserver
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - crm_network
+    depends_on:
+      - app
+
+  # 3. База данных PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: crm_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: crm_internal
+      POSTGRES_USER: crm_admin
+      POSTGRES_PASSWORD: crm_secure_password
+    volumes:
+      - crm_postgres_data:/var/lib/postgresql/data
+    networks:
+      - crm_network
+
+networks:
+  crm_network:
+    driver: bridge
+
+volumes:
+  crm_postgres_data:
+    driver: local
