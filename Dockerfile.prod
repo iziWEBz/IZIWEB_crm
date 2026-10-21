@@ -1,0 +1,55 @@
+# Production image for Coolify (compose.coolify.yaml): php-fpm only, paired
+# with the `nginx` service (Dockerfile.nginx.prod). The development setup —
+# Dockerfile + docker-compose.yml with the code bind-mounted — is unchanged.
+
+# 1. PHP dependencies, without dev packages. vendor/ in the repository is not
+#    used: .dockerignore keeps it out, so the image never depends on it.
+FROM docker.io/library/composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-req='ext-*'
+
+# 2. Front-end assets (Vite). The welcome page uses @vite, so the manifest
+#    must exist in the image or the page fails.
+FROM docker.io/library/node:22-alpine AS assets
+WORKDIR /app
+COPY package.json ./
+RUN npm install --no-audit --no-fund
+COPY vite.config.js ./
+COPY resources ./resources
+RUN npm run build
+
+# 3. Runtime.
+FROM docker.io/library/php:8.2-fpm-alpine
+
+RUN apk add --no-cache libpq libpng libjpeg-turbo freetype libzip \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS postgresql-dev libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pgsql zip gd bcmath opcache \
+    && apk del .build-deps
+
+RUN { \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.max_accelerated_files=20000'; \
+    echo 'opcache.memory_consumption=192'; \
+    } > /usr/local/etc/php/conf.d/opcache-prod.ini \
+    && printf 'upload_max_filesize=20M\npost_max_size=20M\n' > /usr/local/etc/php/conf.d/uploads.ini \
+    && sed -i 's/^user = www-data/;&/; s/^group = www-data/;&/' /usr/local/etc/php-fpm.d/www.conf
+
+WORKDIR /app
+COPY . .
+COPY --from=vendor /app/vendor ./vendor
+COPY --from=assets /app/public/build ./public/build
+
+RUN php artisan package:discover --ansi \
+    && mkdir -p storage/api-docs storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+COPY docker/entrypoint.prod.sh /usr/local/bin/entrypoint.prod.sh
+RUN chmod +x /usr/local/bin/entrypoint.prod.sh
+
+USER www-data
+EXPOSE 9000
+ENTRYPOINT ["entrypoint.prod.sh"]
+CMD ["php-fpm"]
